@@ -1,0 +1,17 @@
+{
+	"name": "addle",
+	"authors": [
+		"Paul Backus"
+	],
+	"description": "Argument-dependent lookup for extension methods",
+	"copyright": "Copyright © 2020, Paul Backus",
+	"license": "BSL-1.0",
+
+	"buildTypes": {
+		"unittest": {
+			"buildOptions": ["unittests", "debugMode", "debugInfo"],
+			"sourcePaths": ["src", "tests"],
+			"importPaths": ["src", "tests"]
+		}
+	}
+}
