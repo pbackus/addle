@@ -1,7 +1,7 @@
 module example;
 
 import addle;
-import lib;
+import lib: A, B, C;
 
 // Can extend types from other modules
 bool empty(A a) { return false; }
