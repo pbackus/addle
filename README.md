@@ -6,53 +6,60 @@ Argument-dependent lookup for extension methods.
 `addle` lets you extend types with UFCS methods, and share those methods
 seamlessly with code in other modules.
 
+Documentation
+-------------
+
+[View online on `dpldocs.info`.][docs]
+
+`addle` uses [adrdox][] to generate its documentation. To build your own copy,
+run the following command from the root of the `addle` repository:
+
+    path/to/adrdox/doc2 --genSearchIndex --genSource -o generated-docs src
+
+[docs]: https://addle.dpldocs.info/addle.html
+[adrdox]: https://github.com/adamdruppe/adrdox
+
 Example
 -------
 
-    module lib;
-
-    // No methods
-    struct A {}
-
-    // UFCS methods
-    struct B {}
-    bool empty(B b) { return false; }
-    char front(B b) { return 'b'; }
-    void popFront(B b) {}
-
-    // Normal methods
-    struct C
-    {
-        bool empty() { return false; }
-        int front() { return 'c'; }
-        void popFront() {}
-    }
-
-    ---
-
-    module example;
-
     import addle;
-    import lib: A, B, C;
+    import std.range;
 
-    // Can extend types from other modules
-    bool empty(A a) { return false; }
-    char front(A a) { return 'a'; }
-    void popFront(A a) {}
+    // Import a type from another module
+    import mylib: MyStruct;
 
-    // ...but can't hijack existing methods
-    char front(C c) { return 'x'; }
+    // Define range primitives for MyStruct
+    bool empty(MyStruct a) { return false; }
+    string front(MyStruct a) { return "ok"; }
+    void popFront(MyStruct a) {}
 
-    unittest {
+    // MyStruct isn't considered an input range, because
+    // std.range can't see our UFCS methods.
+    static assert(isInputRange!MyStruct == false);
+
+    // ...but extending it makes those methods visible.
+    static assert(isInputRange!(Extended!MyStruct));
+
+    void main()
+    {
         import std.range: take, only;
         import std.algorithm: equal;
 
-        A a;
-        assert(a.extended.take(3).equal(only('a', 'a', 'a')));
+        MyStruct myStruct;
 
-        B b;
-        assert(b.extended.take(3).equal(only('b', 'b', 'b')));
-
-        C c;
-        assert(c.extended.take(3).equal(only('c', 'c', 'c')));
+        // Now we can use all of the standard range algorithms
+        assert(
+            myStruct.extended
+            .take(3)
+            .equal(only("ok", "ok", "ok"))
+        );
     }
+
+Installation
+------------
+
+If you're using dub, add the [addle](https://code.dlang.org/packages/addle)
+package to your project as a dependency.
+
+Alternatively, since it's a single, self-contained module, you can simply copy
+`addle.d` to your source directory and compile as usual.
